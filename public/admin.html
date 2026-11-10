@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Unit 3 Review: Teacher Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg1:#6d28d9; --bg2:#3b0f86; --card:#ffffff; --ink:#1e1532; --muted:#5d5475; --line:#e3ddf0; --soft:#f6f3fc;
+  --accent:#6d28d9; --accent-ink:#fff; --accent-soft:#efe8fd; --ok:#157a3a; --bar2:#b9a2f3; --bad:#b42318; --bad-soft:#fdecea;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg1:#2b1259; --bg2:#110725; --card:#1d1730; --ink:#efeaf9; --muted:#b4aaca; --line:#3a3153; --soft:#251e3b;
+  --accent:#a78bfa; --accent-ink:#1a1030; --accent-soft:#30264f; --ok:#5ee08f; --bar2:#5b4a8f; --bad:#ff8a80; --bad-soft:#3a1d22; color-scheme:dark; } }
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0; min-height:100vh; color:var(--ink); background:var(--bg2) linear-gradient(160deg,var(--bg1),var(--bg2)) fixed;
+  font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif; font-size:16px; line-height:1.45; padding:22px 12px 50px}
+.card{max-width:1180px; margin:0 auto; background:var(--card); border-radius:20px; padding:26px 28px; box-shadow:0 24px 60px rgba(10,0,30,.35)}
+.card.narrow{max-width:420px}
+h1{margin:0 0 4px; font-size:1.7rem} h2{font-size:1.15rem; margin:26px 0 10px}
+.sub{margin:0 0 18px; color:var(--muted)}
+button,select,input{font:inherit; color:var(--ink)}
+button{cursor:pointer; border-radius:10px; border:1.5px solid var(--line); background:var(--card); padding:8px 14px; font-weight:700}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+button.danger{color:var(--bad)}
+button.link{border:none; background:none; color:var(--accent); padding:4px; text-decoration:underline}
+input,select{border:1.5px solid var(--line); border-radius:10px; padding:8px 12px; background:var(--card)}
+:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+.err{color:var(--bad); font-weight:700}
+[hidden]{display:none !important}
+.toolbar{display:flex; flex-wrap:wrap; gap:10px; align-items:end; padding:14px; background:var(--soft); border-radius:14px; border:1.5px solid var(--line)}
+.toolbar label{display:grid; gap:4px; font-size:.85rem; color:var(--muted); font-weight:700}
+.toolbar .spacer{flex:1}
+.cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-top:18px}
+.stat{border:1.5px solid var(--line); border-radius:14px; padding:12px 14px}
+.stat .v{font-size:1.7rem; font-weight:700; color:var(--accent)}
+.stat .k{font-size:.85rem; color:var(--muted)}
+.topics{display:grid; gap:6px}
+.trow{display:grid; grid-template-columns:minmax(180px,300px) 60px 1fr; gap:12px; align-items:center; font-size:.92rem}
+.trow .n{color:var(--muted); text-align:right}
+.bars{display:grid; gap:3px}
+.bar{height:11px; border-radius:6px; background:var(--soft); position:relative; overflow:hidden}
+.bar>span{position:absolute; inset:0 auto 0 0; border-radius:6px}
+.bar.ft>span{background:var(--accent)} .bar.ev>span{background:var(--bar2)}
+.bl{font-size:.75rem; color:var(--muted)}
+.legend{display:flex; gap:16px; font-size:.85rem; color:var(--muted); margin-bottom:8px}
+.sw{display:inline-block; width:12px; height:12px; border-radius:3px; vertical-align:-1px; margin-right:5px}
+.tablewrap{overflow-x:auto; border:1.5px solid var(--line); border-radius:14px}
+table{border-collapse:collapse; width:100%; font-size:.92rem}
+th,td{padding:9px 10px; text-align:left; border-bottom:1px solid var(--line); white-space:nowrap}
+th{background:var(--soft); cursor:pointer; user-select:none; position:sticky; top:0}
+th[aria-sort]::after{content:" ▾"; color:var(--accent)} th[aria-sort="ascending"]::after{content:" ▴"}
+tbody tr.srow{cursor:pointer} tbody tr.srow:hover{background:var(--soft)}
+tr.detail td{white-space:normal; background:var(--soft)}
+.num{text-align:right; font-variant-numeric:tabular-nums}
+.pill{display:inline-block; padding:1px 8px; border-radius:999px; font-size:.8rem; font-weight:700}
+.y{color:var(--ok)} .n{color:var(--bad)}
+.detail-grid{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.4fr); gap:18px}
+@media (max-width:860px){ .detail-grid{grid-template-columns:1fr} .trow{grid-template-columns:1fr 50px} .trow .bars{grid-column:1 / -1} }
+.detail h3{margin:6px 0 8px; font-size:1rem}
+.mini td,.mini th{padding:5px 8px; font-size:.85rem; position:static; cursor:default}
+.eqcell{max-width:340px; overflow:hidden; text-overflow:ellipsis; font-family:"Cambria Math","Times New Roman",serif}
+.note{font-size:.88rem; color:var(--muted)}
+</style>
+</head>
+<body>
+<main class="card narrow" id="login">
+  <h1>Teacher dashboard</h1>
+  <p class="sub">Unit 3 review. Enter the password you set as ADMIN_PASSWORD in Netlify.</p>
+  <form id="loginForm">
+    <label for="pw" style="font-weight:700">Password</label><br>
+    <input id="pw" type="password" autocomplete="current-password" style="width:100%; margin:6px 0 12px">
+    <button class="primary" type="submit">Open dashboard</button>
+    <p class="err" id="loginErr" hidden></p>
+  </form>
+</main>
+
+<main class="card" id="dash" hidden>
+  <div style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:10px; align-items:start">
+    <div><h1>Unit 3 review: teacher dashboard</h1><p class="sub" id="loaded"></p></div>
+    <button class="link" id="logout" type="button">Log out</button>
+  </div>
+  <div class="toolbar">
+    <label>Period<select id="fPeriod"><option value="">All periods</option></select></label>
+    <label>Time range<select id="fSince">
+      <option value="all">All time</option><option value="today">Today</option><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="date">Since a date…</option>
+    </select></label>
+    <label id="dateWrap" hidden>Since<input type="date" id="fDate"></label>
+    <label>Find a student<input id="fSearch" type="search" placeholder="Name"></label>
+    <span class="spacer"></span>
+    <button type="button" id="refresh">Refresh</button>
+    <button type="button" id="csvStudents">Export students (CSV)</button>
+    <button type="button" id="csvAttempts">Export all attempts (CSV)</button>
+  </div>
+
+  <div class="cards" id="cards"></div>
+
+  <h2>Class accuracy by topic</h2>
+  <div class="legend"><span><span class="sw" style="background:var(--accent)"></span>First-try correct</span><span><span class="sw" style="background:var(--bar2)"></span>Eventually correct</span></div>
+  <div class="topics" id="topicBars"></div>
+
+  <h2>Students</h2>
+  <p class="note">Click a student to see their topics, recent problems, and quiz scores. “Problems” counts every problem a student checked an answer on or asked for a hint on.</p>
+  <div class="tablewrap"><table id="stuTable"><thead><tr>
+    <th data-k="name">Student</th><th data-k="period">Period</th><th data-k="active" class="num">Active time</th>
+    <th data-k="att" class="num">Problems</th><th data-k="ftp" class="num">First-try %</th><th data-k="evp" class="num">Eventually %</th>
+    <th data-k="hints" class="num">Used hints</th><th data-k="quizBest" class="num">Best quiz</th><th data-k="last">Last active</th>
+  </tr></thead><tbody></tbody></table></div>
+
+  <h2>Manage data</h2>
+  <p class="note">Clearing removes every student’s records for this site (for example, before a new school year). It can’t be undone, so export a CSV first.</p>
+  <button type="button" class="danger" id="clearAll">Clear all data…</button>
+</main>
+
+<script>
+const TOPIC_NAMES={
+  DS:'Discriminant: number and type', MM:'Discriminant: match to methods',
+  F1:'Factoring a = 1', F2:'Factoring a > 1', DQ:'Difference of squares (GCF)', CB:'Sum/difference of cubes (GCF)',
+  SR1:'Square roots: rational', SR2:'Square roots: irrational', SR3:'Square roots: complex',
+  QF1:'Quadratic formula: rational', QF2:'Quadratic formula: irrational', QF3:'Quadratic formula: complex',
+  CS1:'Completing the square a = 1, real', CS2:'Completing the square a = 1, complex', CS3:'Completing the square a > 1, real', CS4:'Completing the square a > 1, complex',
+  MIX:'Method of your choice', CX1:'Powers of i and conjugates', CX2:'Complex: add and subtract', CX3:'Complex: multiply', CX4:'Complex: divide', BN:'Bonus (retired)'
+};
+const TOPIC_ORDER=Object.keys(TOPIC_NAMES);
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let PW='', SESSIONS=[], SORT={k:'name', dir:1}, OPEN=null;
+try{ PW=sessionStorage.getItem('u3pw')||''; }catch(e){}
+
+async function api(method, body){
+  const res=await fetch('/api/admin',{method, headers:{'x-admin-password':PW, ...(body?{'Content-Type':'application/json'}:{})}, body:body?JSON.stringify(body):undefined, cache:'no-store'});
+  let data={}; try{ data=await res.json(); }catch(e){}
+  if(!res.ok) throw new Error(data.error || (res.status===404 ? 'The admin function wasn’t found. Check Logs → Functions in Netlify to make sure it deployed.' : 'Request failed ('+res.status+').'));
+  return data;
+}
+async function load(){
+  const data=await api('GET');
+  SESSIONS=data.sessions||[];
+  $('loaded').textContent=`Loaded ${SESSIONS.length} session${SESSIONS.length===1?'':'s'} at ${new Date().toLocaleTimeString([], {hour:'numeric', minute:'2-digit'})}.`;
+  const periods=[...new Set(SESSIONS.map(s=>s.period).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+  const cur=$('fPeriod').value;
+  $('fPeriod').innerHTML='<option value="">All periods</option>'+periods.map(p=>`<option ${p===cur?'selected':''}>${esc(p)}</option>`).join('');
+  render();
+}
+$('loginForm').addEventListener('submit',async e=>{
+  e.preventDefault(); PW=$('pw').value; $('loginErr').hidden=true;
+  try{ await load(); try{ sessionStorage.setItem('u3pw',PW); }catch(e){} $('login').hidden=true; $('dash').hidden=false; }
+  catch(err){ $('loginErr').textContent=err.message; $('loginErr').hidden=false; }
+});
+$('logout').addEventListener('click',()=>{ try{ sessionStorage.removeItem('u3pw'); }catch(e){} location.reload(); });
+$('refresh').addEventListener('click',()=>load().catch(e=>alert(e.message)));
+['fPeriod','fSince','fDate','fSearch'].forEach(id=>$(id).addEventListener('input',()=>{ $('dateWrap').hidden=$('fSince').value!=='date'; render(); }));
+
+function sinceTs(){
+  const v=$('fSince').value, now=new Date();
+  if(v==='today'){ const d=new Date(now); d.setHours(0,0,0,0); return d.getTime(); }
+  if(v==='7'||v==='30') return Date.now()-(+v)*864e5;
+  if(v==='date' && $('fDate').value){ const [y,m,d]=$('fDate').value.split('-').map(Number); return new Date(y,m-1,d).getTime(); }
+  return 0;
+}
+const keyOf=s=>s.name.trim().toLowerCase().replace(/\s+/g,' ')+'|'+String(s.period||'').trim().toLowerCase();
+const pct=(a,b)=>b?Math.round(100*a/b):null;
+const pctTxt=v=>v===null?'—':v+'%';
+function fmtDur(sec){ sec=Math.round(sec||0); const h=Math.floor(sec/3600), m=Math.floor(sec%3600/60); return h?`${h} h ${m} min`:m?`${m} min`:`${sec} s`; }
+function fmtWhen(ts){ if(!ts) return '—'; const d=new Date(ts); return d.toLocaleDateString([], {month:'short', day:'numeric'})+', '+d.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}); }
+
+function aggregate(){
+  const since=sinceTs(), per=$('fPeriod').value;
+  const students=new Map(), topics={};
+  for(const s of SESSIONS){
+    if(per && s.period!==per) continue;
+    if((s.updated||0)<since) continue;
+    const k=keyOf(s);
+    if(!students.has(k)) students.set(k,{key:k, name:s.name, period:s.period, active:0, att:0, ft:0, ev:0, hints:0, quizzes:[], last:0, attempts:[], ids:[]});
+    const st=students.get(k);
+    st.ids.push(s.id); st.active+=s.activeSec||0; st.last=Math.max(st.last, s.updated||0);
+    for(const q of (s.quizzes||[])) if(q.ts>=since) st.quizzes.push(q);
+    for(const a of (s.attempts||[])){
+      if(a.ts<since) continue;
+      st.attempts.push(a); st.att++; if(a.ft) st.ft++; if(a.ok) st.ev++; if(a.h>0) st.hints++;
+      const t=topics[a.tp]||(topics[a.tp]={att:0, ft:0, ev:0});
+      t.att++; if(a.ft) t.ft++; if(a.ok) t.ev++;
+    }
+  }
+  for(const st of students.values()){
+    st.ftp=pct(st.ft,st.att); st.evp=pct(st.ev,st.att);
+    st.quizBest = st.quizzes.length ? Math.max(...st.quizzes.map(q=>q.total?q.score/q.total:0)) : null;
+    st.attempts.sort((a,b)=>b.ts-a.ts);
+  }
+  return {students:[...students.values()], topics};
+}
+
+function render(){
+  const {students, topics}=aggregate();
+  const q=$('fSearch').value.trim().toLowerCase();
+  const shown=students.filter(s=>!q || s.name.toLowerCase().includes(q));
+  // summary cards
+  const tot=students.reduce((a,s)=>({att:a.att+s.att, ft:a.ft+s.ft, ev:a.ev+s.ev, active:a.active+s.active, quiz:a.quiz+s.quizzes.length}),{att:0,ft:0,ev:0,active:0,quiz:0});
+  $('cards').innerHTML=[
+    ['Students', students.length], ['Problems attempted', tot.att], ['First-try correct', pctTxt(pct(tot.ft,tot.att))],
+    ['Eventually correct', pctTxt(pct(tot.ev,tot.att))], ['Total active time', fmtDur(tot.active)], ['Practice quizzes taken', tot.quiz]
+  ].map(([k,v])=>`<div class="stat"><div class="v">${v}</div><div class="k">${k}</div></div>`).join('');
+  // topic bars
+  const ids=TOPIC_ORDER.filter(id=>topics[id]).concat(Object.keys(topics).filter(id=>!TOPIC_NAMES[id]));
+  $('topicBars').innerHTML = ids.length ? ids.map(id=>{ const t=topics[id], f=pct(t.ft,t.att), e=pct(t.ev,t.att);
+    return `<div class="trow"><span>${esc(TOPIC_NAMES[id]||id)}</span><span class="n">${t.att}</span><div class="bars">
+      <div class="bar ft" title="First-try ${f}%"><span style="width:${f}%"></span></div><div class="bl">${f}% first try, ${e}% eventually</div>
+      <div class="bar ev" title="Eventually ${e}%"><span style="width:${e}%"></span></div></div></div>`; }).join('')
+    : '<p class="note">No problems recorded for this filter yet.</p>';
+  // table
+  const k=SORT.k;
+  shown.sort((a,b)=>{ let x=a[k], y=b[k]; if(x===null) x=-1; if(y===null) y=-1;
+    if(typeof x==='string') return SORT.dir*x.localeCompare(y,undefined,{numeric:true}); return SORT.dir*(x-y); });
+  document.querySelectorAll('#stuTable th').forEach(th=>{ if(th.dataset.k===k) th.setAttribute('aria-sort',SORT.dir>0?'ascending':'descending'); else th.removeAttribute('aria-sort'); });
+  $('stuTable').tBodies[0].innerHTML = shown.length ? shown.map(s=>`
+    <tr class="srow" data-key="${esc(s.key)}" tabindex="0">
+      <td><b>${esc(s.name)}</b></td><td>${esc(s.period)}</td><td class="num">${fmtDur(s.active)}</td><td class="num">${s.att}</td>
+      <td class="num">${pctTxt(s.ftp)}</td><td class="num">${pctTxt(s.evp)}</td><td class="num">${s.hints}</td>
+      <td class="num">${s.quizBest===null?'—':Math.round(100*s.quizBest)+'%'}</td><td>${fmtWhen(s.last)}</td>
+    </tr>${OPEN===s.key?detailRow(s):''}`).join('')
+    : '<tr><td colspan="9" class="note">No students match this filter.</td></tr>';
+  window._shown=shown; window._students=students;
+}
+function detailRow(s){
+  const per={};
+  s.attempts.forEach(a=>{ const t=per[a.tp]||(per[a.tp]={att:0,ft:0,ev:0}); t.att++; if(a.ft)t.ft++; if(a.ok)t.ev++; });
+  const ids=TOPIC_ORDER.filter(id=>per[id]);
+  const yes=b=>b?'<span class="y">✓</span>':'<span class="n">✗</span>';
+  return `<tr class="detail"><td colspan="9"><div class="detail-grid">
+    <div>
+      <h3>Topics</h3>
+      <table class="mini"><tr><th>Topic</th><th class="num">Problems</th><th class="num">First try</th><th class="num">Eventually</th></tr>
+      ${ids.map(id=>`<tr><td>${esc(TOPIC_NAMES[id])}</td><td class="num">${per[id].att}</td><td class="num">${pctTxt(pct(per[id].ft,per[id].att))}</td><td class="num">${pctTxt(pct(per[id].ev,per[id].att))}</td></tr>`).join('')||'<tr><td colspan="4">None yet</td></tr>'}
+      </table>
+      <h3>Practice quizzes</h3>
+      ${s.quizzes.length ? `<table class="mini">${s.quizzes.sort((a,b)=>b.ts-a.ts).map(q=>`<tr><td>${fmtWhen(q.ts)}</td><td class="num"><b>${q.score} / ${q.total}</b></td></tr>`).join('')}</table>` : '<p class="note">None taken.</p>'}
+      <p><button type="button" class="danger" data-del="${esc(s.key)}">Delete this student’s records</button></p>
+    </div>
+    <div>
+      <h3>Most recent problems</h3>
+      <table class="mini"><tr><th>When</th><th>Topic</th><th>Problem</th><th class="num">Tries</th><th>First try</th><th>Solved</th><th class="num">Hints</th></tr>
+      ${s.attempts.slice(0,40).map(a=>`<tr><td>${fmtWhen(a.ts)}${a.m==='q'?' <span class="pill" style="background:var(--accent-soft)">quiz</span>':''}</td><td>${esc(TOPIC_NAMES[a.tp]||a.tp)}</td><td class="eqcell" title="${esc(a.eq)}">${esc(a.eq)}</td><td class="num">${a.tries}</td><td>${yes(a.ft)}</td><td>${yes(a.ok)}</td><td class="num">${a.sol?'full':a.h||0}</td></tr>`).join('')}
+      </table>
+    </div>
+  </div></td></tr>`;
+}
+$('stuTable').addEventListener('click',async e=>{
+  const th=e.target.closest('th');
+  if(th && th.dataset.k){ SORT = {k:th.dataset.k, dir: SORT.k===th.dataset.k ? -SORT.dir : (['name','period'].includes(th.dataset.k)?1:-1)}; render(); return; }
+  const del=e.target.closest('[data-del]');
+  if(del){
+    const st=window._students.find(s=>s.key===del.dataset.del); if(!st) return;
+    if(!confirm(`Delete all records for ${st.name} (period ${st.period}) in the current filter? This can’t be undone.`)) return;
+    try{ await api('DELETE',{ids:st.ids}); OPEN=null; await load(); }catch(err){ alert(err.message); }
+    return;
+  }
+  const row=e.target.closest('tr.srow');
+  if(row){ OPEN = OPEN===row.dataset.key ? null : row.dataset.key; render(); }
+});
+$('stuTable').addEventListener('keydown',e=>{ if(e.key==='Enter' && e.target.matches('tr.srow')) e.target.click(); });
+
+function download(name, rows){
+  const csv=rows.map(r=>r.map(v=>{ v=String(v??''); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }).join(',')).join('\r\n');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv'})); a.download=name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+$('csvStudents').addEventListener('click',()=>{
+  const {students}=aggregate();
+  const rows=[['Student','Period','Active minutes','Problems','First-try correct','First-try %','Eventually correct','Eventually %','Problems with hints','Quizzes taken','Best quiz %','Last active']];
+  students.sort((a,b)=>a.period.localeCompare(b.period,undefined,{numeric:true})||a.name.localeCompare(b.name)).forEach(s=>rows.push([s.name,s.period,Math.round(s.active/60),s.att,s.ft,s.ftp??'',s.ev,s.evp??'',s.hints,s.quizzes.length,s.quizBest===null?'':Math.round(100*s.quizBest),new Date(s.last).toLocaleString()]));
+  download('unit3-students.csv', rows);
+});
+$('csvAttempts').addEventListener('click',()=>{
+  const {students}=aggregate();
+  const rows=[['Student','Period','Time','Mode','Topic','Problem','Tries','First-try correct','Eventually correct','Steps revealed','Viewed full solution']];
+  students.forEach(s=>s.attempts.slice().reverse().forEach(a=>rows.push([s.name,s.period,new Date(a.ts).toLocaleString(),a.m==='q'?'Quiz':'Practice',TOPIC_NAMES[a.tp]||a.tp,a.eq,a.tries,a.ft?'Yes':'No',a.ok?'Yes':'No',a.h,a.sol?'Yes':'No'])));
+  download('unit3-attempts.csv', rows);
+});
+$('clearAll').addEventListener('click',async()=>{
+  const v=prompt('This deletes every student record on this site. Type DELETE to confirm.');
+  if(v!=='DELETE') return;
+  try{ const r=await api('DELETE',{all:true, confirm:'DELETE'}); alert(`Deleted ${r.deleted} session records.`); OPEN=null; await load(); }catch(err){ alert(err.message); }
+});
+
+if(PW){ load().then(()=>{ $('login').hidden=true; $('dash').hidden=false; }).catch(()=>{ PW=''; }); }
+</script>
+</body>
+</html>
